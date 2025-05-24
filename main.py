@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import json
 from pprint import pprint
+from typing import Sequence
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -16,10 +17,31 @@ class Subject:
     ore_practice: int
     prof_asistenti: str
 
+    @classmethod
+    def from_json(cls, data):
+        return cls(**data)
+    
+@dataclass
+class SubjectGroup:
+    subjects: Sequence[Subject]
+
+    @classmethod
+    def from_json(cls, data):
+        subjects = [Subject.from_json(subject) for subject in data]    
+        return cls(subjects)
+    
+    def get_for_students(self, profile_name: str):
+        subjects: list[Subject] = []
+        for subject in self.subjects:
+            if subject.nume_specializare_mat == profile_name:
+                subjects.append(subject)
+        return subjects
+
+
 def load_subjects():
     with open("subjects.json", "r") as f:
         raw_subjects = json.load(f)
-    subjects: list[Subject] = [Subject(**subject) for subject in raw_subjects]
+    subjects = SubjectGroup.from_json(raw_subjects)
     return subjects
 
 def load_rooms():
@@ -33,11 +55,8 @@ def load_students():
     return students
 
 def main():
-    subjects = load_subjects()
-    af1_subjects: list[Subject] = []
-    for subject in subjects:
-        if subject.nume_specializare_mat == "AF 1":
-            af1_subjects.append(subject)
+    subject_group = load_subjects()
+    af1_subjects = subject_group.get_for_students("AF 1")
     pprint(af1_subjects)
     af1_subjects_names = [subject.nume_materie for subject in af1_subjects]
         
