@@ -1,0 +1,218 @@
+[
+    {
+        "id": 1,
+        "nume_specializare": "AF",
+        "nr_studenti": 62,
+        "nr_grupe": 3,
+        "nr_semigrupe": 4,
+        "an_studiu": 1
+    },
+    {
+        "id": 2,
+        "nume_specializare": "AF",
+        "nr_studenti": 37,
+        "nr_grupe": 2,
+        "nr_semigrupe": 3,
+        "an_studiu": 2
+    },
+    {
+        "id": 3,
+        "nume_specializare": "IE",
+        "nr_studenti": 34,
+        "nr_grupe": 2,
+        "nr_semigrupe": 2,
+        "an_studiu": 3
+    },
+    {
+        "id": 4,
+        "nume_specializare": "IE",
+        "nr_studenti": 40,
+        "nr_grupe": 2,
+        "nr_semigrupe": 3,
+        "an_studiu": 2
+    },
+    {
+        "id": 5,
+        "nume_specializare": "IE",
+        "nr_studenti": 41,
+        "nr_grupe": 2,
+        "nr_semigrupe": 3,
+        "an_studiu": 1
+    },
+    {
+        "id": 6,
+        "nume_specializare": "AF",
+        "nr_studenti": 34,
+        "nr_grupe": 2,
+        "nr_semigrupe": 2,
+        "an_studiu": 3
+    },
+    {
+        "id": 7,
+        "nume_specializare": "AI",
+        "nr_studenti": 39,
+        "nr_grupe": 2,
+        "nr_semigrupe": 3,
+        "an_studiu": 1
+    },
+    {
+        "id": 8,
+        "nume_specializare": "AI",
+        "nr_studenti": 38,
+        "nr_grupe": 2,
+        "nr_semigrupe": 3,
+        "an_studiu": 2
+    },
+    {
+        "id": 9,
+        "nume_specializare": "AI",
+        "nr_studenti": 32,
+        "nr_grupe": 2,
+        "nr_semigrupe": 2,
+        "an_studiu": 3
+    },
+    {
+        "id": 10,
+        "nume_specializare": "AMA",
+        "nr_studenti": 29,
+        "nr_grupe": 1,
+        "nr_semigrupe": 2,
+        "an_studiu": 1
+    },
+    {
+        "id": 11,
+        "nume_specializare": "AMA",
+        "nr_studenti": 27,
+        "nr_grupe": 1,
+        "nr_semigrupe": 2,
+        "an_studiu": 2
+    },
+    {
+        "id": 12,
+        "nume_specializare": "AMA",
+        "nr_studenti": 28,
+        "nr_grupe": 1,
+        "nr_semigrupe": 2,
+        "an_studiu": 3
+    },
+    {
+        "id": 13,
+        "nume_specializare": "CIG",
+        "nr_studenti": 109,
+        "nr_grupe": 4,
+        "nr_semigrupe": 7,
+        "an_studiu": 1
+    },
+    {
+        "id": 14,
+        "nume_specializare": "CIG",
+        "nr_studenti": 93,
+        "nr_grupe": 3,
+        "nr_semigrupe": 6,
+        "an_studiu": 2
+    },
+    {
+        "id": 15,
+        "nume_specializare": "CIG",
+        "nr_studenti": 72,
+        "nr_grupe": 3,
+        "nr_semigrupe": 4,
+        "an_studiu": 3
+    },
+    {
+        "id": 16,
+        "nume_specializare": "ECTS",
+        "nr_studenti": 66,
+        "nr_grupe": 3,
+        "nr_semigrupe": 4,
+        "an_studiu": 1
+    },
+    {
+        "id": 17,
+        "nume_specializare": "ECTS",
+        "nr_studenti": 48,
+        "nr_grupe": 2,
+        "nr_semigrupe": 3,
+        "an_studiu": 2
+    },
+    {
+        "id": 18,
+        "nume_specializare": "ECTS",
+        "nr_studenti": 46,
+        "nr_grupe": 2,
+        "nr_semigrupe": 3,
+        "an_studiu": 3
+    },
+    {
+        "id": 19,
+        "nume_specializare": "EGCE",
+        "nr_studenti": 24,
+        "nr_grupe": 1,
+        "nr_semigrupe": 2,
+        "an_studiu": 1
+    },
+    {
+        "id": 20,
+        "nume_specializare": "EGCE",
+        "nr_studenti": 36,
+        "nr_grupe": 2,
+        "nr_semigrupe": 2,
+        "an_studiu": 2
+    },
+    {
+        "id": 21,
+        "nume_specializare": "EGCE",
+        "nr_studenti": 19,
+        "nr_grupe": 1,
+        "nr_semigrupe": 2,
+        "an_studiu": 3
+    },
+    {
+        "id": 22,
+        "nume_specializare": "FB",
+        "nr_studenti": 57,
+        "nr_grupe": 2,
+        "nr_semigrupe": 4,
+        "an_studiu": 1
+    },
+    {
+        "id": 23,
+        "nume_specializare": "FB",
+        "nr_studenti": 45,
+        "nr_grupe": 2,
+        "nr_semigrupe": 3,
+        "an_studiu": 2
+    },
+    {
+        "id": 24,
+        "nume_specializare": "FB",
+        "nr_studenti": 40,
+        "nr_grupe": 2,
+        "nr_semigrupe": 2,
+        "an_studiu": 3
+    },
+    {
+        "id": 25,
+        "nume_specializare": "MNG",
+        "nr_studenti": 46,
+        "nr_grupe": 2,
+        "nr_semigrupe": 3,
+        "an_studiu": 1
+    },
+    {
+        "id": 26,
+        "nume_specializare": "MNG",
+        "nr_studenti": 30,
+        "nr_grupe": 1,
+        "nr_semigrupe": 2,
+        "an_studiu": 2
+    },
+    {
+        "id": 27,
+        "nume_specializare": "MNG",
+        "nr_studenti": 36,
+        "nr_grupe": 2,
+        "nr_semigrupe": 2,
+        "an_studiu": 3
+    }
+]

@@ -1,0 +1,178 @@
+[
+    {
+        "id": 1,
+        "sala": "E101",
+        "nr_locuri": 70,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "curs"
+    },
+    {
+        "id": 2,
+        "sala": "INCUBAF",
+        "nr_locuri": 20,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "seminar"
+    },
+    {
+        "id": 3,
+        "sala": "Aula",
+        "nr_locuri": 150,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "curs"
+    },
+    {
+        "id": 4,
+        "sala": "A033",
+        "nr_locuri": 20,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "laborator"
+    },
+    {
+        "id": 5,
+        "sala": "A036a",
+        "nr_locuri": 20,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "laborator"
+    },
+    {
+        "id": 6,
+        "sala": "A109",
+        "nr_locuri": 30,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "seminar"
+    },
+    {
+        "id": 7,
+        "sala": "A110",
+        "nr_locuri": 20,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "laborator"
+    },
+    {
+        "id": 8,
+        "sala": "A013",
+        "nr_locuri": 20,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "seminar"
+    },
+    {
+        "id": 9,
+        "sala": "S.Club",
+        "nr_locuri": 40,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "seminar"
+    },
+    {
+        "id": 10,
+        "sala": "E118",
+        "nr_locuri": 30,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "seminar"
+    },
+    {
+        "id": 11,
+        "sala": "FIM1",
+        "nr_locuri": 110,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "curs"
+    },
+    {
+        "id": 12,
+        "sala": "E123",
+        "nr_locuri": 20,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "laborator"
+    },
+    {
+        "id": 13,
+        "sala": "E005",
+        "nr_locuri": 120,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "curs"
+    },
+    {
+        "id": 14,
+        "sala": "H001",
+        "nr_locuri": 20,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "seminar"
+    },
+    {
+        "id": 15,
+        "sala": "E233",
+        "nr_locuri": 110,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "curs"
+    },
+    {
+        "id": 16,
+        "sala": "E119",
+        "nr_locuri": 30,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "seminar"
+    },
+    {
+        "id": 17,
+        "sala": "E126",
+        "nr_locuri": 30,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "seminar"
+    },
+    {
+        "id": 18,
+        "sala": "ED011",
+        "nr_locuri": 30,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "seminar"
+    },
+    {
+        "id": 19,
+        "sala": "ED015",
+        "nr_locuri": 30,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "seminar"
+    },
+    {
+        "id": 20,
+        "sala": "ED030",
+        "nr_locuri": 30,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "seminar"
+    },
+    {
+        "id": 21,
+        "sala": "REZERVA",
+        "nr_locuri": 110,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "curs"
+    },
+    {
+        "id": 22,
+        "sala": "REZSEM",
+        "nr_locuri": 40,
+        "int_start": -1,
+        "int_stop": -1,
+        "scop": "seminar"
+    }
+]
