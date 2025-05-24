@@ -1,4 +1,5 @@
 import json
+from pprint import pprint
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -6,12 +7,18 @@ import pandas as pd
 def main():
     with open("subjects.json", "r") as f:
         subjects = json.load(f)
+    with open("rooms.json", "r") as f:
+        rooms = json.load(f)
+    with open("students.json", "r") as f:
+        students = json.load(f)
     # print(subjects)
-    res = []
-    for subject in subjects[:6]:
-        res.append(subject["nume_materie"])
+    af1_subjects = []
+    for subject in subjects:
+        if subject["nume_specializare_mat"] == "AF 1":
+            af1_subjects.append(subject)
+    pprint(af1_subjects)
         
-    plotting({"Monday": res, "Tuesday": res})
+    # plotting({})
 
 def plotting(data: dict[str, list[str]]):
 
