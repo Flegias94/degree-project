@@ -16,16 +16,24 @@ class Subject:
     ore_practice: int
     prof_asistenti: str
 
-
-def main():
+def load_subjects():
     with open("subjects.json", "r") as f:
         raw_subjects = json.load(f)
+    subjects: list[Subject] = [Subject(**subject) for subject in raw_subjects]
+    return subjects
+
+def load_rooms():
     with open("rooms.json", "r") as f:
         rooms = json.load(f)
+    return rooms
+
+def load_students():
     with open("students.json", "r") as f:
         students = json.load(f)
-    # print(subjects)
-    subjects: list[Subject] = [Subject(**subject) for subject in raw_subjects]
+    return students
+
+def main():
+    subjects = load_subjects()
     af1_subjects: list[Subject] = []
     for subject in subjects:
         if subject.nume_specializare_mat == "AF 1":
