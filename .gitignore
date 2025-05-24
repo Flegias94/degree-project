@@ -176,3 +176,5 @@ cython_debug/
 observed_flow.txt
 pyvenv.cfg
 Scripts/
+fisier.txt
+*.png
