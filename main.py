@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import json
 from pprint import pprint
-from typing import Sequence
+from typing import Literal, Sequence
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -21,6 +21,13 @@ class Subject:
     def from_json(cls, data):
         return cls(**data)
     
+    def get_sessions(self, data):
+        sessions = []
+        for _ in range(self.ore_curs):
+            sessions.append(SubjectSession(self.name, "curs"))
+        for _ in range(self.ore_practice):
+            sessions.append(SubjectSession(self.nume, self.tip_ora))
+
 @dataclass
 class SubjectGroup:
     subjects: Sequence[Subject]
@@ -37,6 +44,10 @@ class SubjectGroup:
                 subjects.append(subject)
         return subjects
 
+@dataclass
+class SubjectSession:
+    name: str
+    type: Literal["curs", "laborator", "seminar"]
 
 def load_subjects():
     with open("subjects.json", "r") as f:
