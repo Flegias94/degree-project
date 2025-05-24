@@ -11,17 +11,18 @@ def main():
     for subject in subjects[:6]:
         res.append(subject["nume_materie"])
         
-    plotting(res)
+    plotting({"Monday": res, "Tuesday": res})
 
-def plotting(monday: list[str]):
+def plotting(data: dict[str, list[str]]):
 
-    week_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    week_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
     time_slots = [f"{hour}:00 - {hour+2}:00" for hour in range(8, 20, 2)]
 
     schedule_df = pd.DataFrame('', index=time_slots, columns=week_days)
 
-    for index, subject in enumerate(monday):
-        schedule_df.iloc[index, schedule_df.columns.get_loc("Monday")] = subject 
+    for day, schedule in data.items():
+        for index, subject in enumerate(schedule):
+            schedule_df.iloc[index, schedule_df.columns.get_loc(day)] = subject 
 
 
     fig, ax = plt.subplots(figsize=(10, 6))
