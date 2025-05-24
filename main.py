@@ -50,6 +50,9 @@ class SubjectSession:
     name: str
     type: Literal["curs", "laborator", "seminar"]
 
+    def render(self):
+        return f"{self.name}\n{self.type}"
+
 def load_subjects():
     with open("subjects.json", "r") as f:
         raw_subjects = json.load(f)
@@ -70,7 +73,7 @@ def main():
     subject_group = load_subjects()
     af1_subjects = subject_group.get_for_students("AF 1")
     af1_subject_sessions = [session for subject in af1_subjects for session in subject.get_sessions()]
-    af1_subjects_names = [subject.name for subject in af1_subject_sessions]
+    af1_subjects_names = [session.render() for session in af1_subject_sessions]
         
     pprint(af1_subjects)
     plotting({"Monday": af1_subjects_names[:6]})
