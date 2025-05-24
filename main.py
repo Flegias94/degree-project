@@ -21,12 +21,13 @@ class Subject:
     def from_json(cls, data):
         return cls(**data)
     
-    def get_sessions(self, data):
+    def get_sessions(self):
         sessions = []
-        for _ in range(self.ore_curs):
-            sessions.append(SubjectSession(self.name, "curs"))
-        for _ in range(self.ore_practice):
-            sessions.append(SubjectSession(self.nume, self.tip_ora))
+        for _ in range(self.ore_curs // 2):
+            sessions.append(SubjectSession(self.nume_materie, "curs"))
+        for _ in range(self.ore_practice // 2):
+            sessions.append(SubjectSession(self.nume_materie, self.tip_ora))
+        return sessions
 
 @dataclass
 class SubjectGroup:
@@ -37,7 +38,7 @@ class SubjectGroup:
         subjects = [Subject.from_json(subject) for subject in data]    
         return cls(subjects)
     
-    def get_for_students(self, profile_name: str):
+    def get_for_students(self, profile_name: str) -> list[Subject]:
         subjects: list[Subject] = []
         for subject in self.subjects:
             if subject.nume_specializare_mat == profile_name:
@@ -68,10 +69,11 @@ def load_students():
 def main():
     subject_group = load_subjects()
     af1_subjects = subject_group.get_for_students("AF 1")
-    pprint(af1_subjects)
-    af1_subjects_names = [subject.nume_materie for subject in af1_subjects]
+    af1_subject_sessions = [session for subject in af1_subjects for session in subject.get_sessions()]
+    af1_subjects_names = [subject.name for subject in af1_subject_sessions]
         
-    plotting({"Monday": af1_subjects_names})
+    pprint(af1_subjects)
+    plotting({"Monday": af1_subjects_names[:6]})
 
 def plotting(data: dict[str, list[str]]):
 
