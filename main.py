@@ -7,7 +7,11 @@ def main():
     with open("subjects.json", "r") as f:
         subjects = json.load(f)
     # print(subjects)
-    plotting(["Math", "English"])
+    res = []
+    for subject in subjects[:6]:
+        res.append(subject["nume_materie"])
+        
+    plotting(res)
 
 def plotting(monday: list[str]):
 
