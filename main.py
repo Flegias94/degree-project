@@ -1,24 +1,39 @@
+from dataclasses import dataclass
 import json
 from pprint import pprint
 import matplotlib.pyplot as plt
 import pandas as pd
 
+@dataclass
+class Subject:
+    id: int
+    nume_specializare_mat: str
+    nume_materie: str
+    tip_ora: str
+    prof_titular: str
+    nr_saptamani: int
+    ore_curs: int
+    ore_practice: int
+    prof_asistenti: str
+
 
 def main():
     with open("subjects.json", "r") as f:
-        subjects = json.load(f)
+        raw_subjects = json.load(f)
     with open("rooms.json", "r") as f:
         rooms = json.load(f)
     with open("students.json", "r") as f:
         students = json.load(f)
     # print(subjects)
-    af1_subjects = []
+    subjects: list[Subject] = [Subject(**subject) for subject in raw_subjects]
+    af1_subjects: list[Subject] = []
     for subject in subjects:
-        if subject["nume_specializare_mat"] == "AF 1":
+        if subject.nume_specializare_mat == "AF 1":
             af1_subjects.append(subject)
     pprint(af1_subjects)
+    af1_subjects_names = [subject.nume_materie for subject in af1_subjects]
         
-    # plotting({})
+    plotting({"Monday": af1_subjects_names})
 
 def plotting(data: dict[str, list[str]]):
 
