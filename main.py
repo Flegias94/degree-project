@@ -9,6 +9,8 @@ def allocate(students_group: StudentsGroup, subject_group: SubjectGroup, rooms_g
     af1_students = students_group.get_for_year_name("AF", 1)
     af1_subjects = subject_group.get_for_students("AF 1")
     af1_subject_sessions = [session for subject in af1_subjects for session in subject.get_sessions(af1_students)]
+    for session in af1_subject_sessions:
+        session.room = rooms_group.rooms[0].sala
     af1_subjects_names = [session.render() for session in af1_subject_sessions]
     
     pprint(af1_subjects)
@@ -42,7 +44,7 @@ def plotting(data: dict[str, list[str]]):
                     cellLoc='center',
                     loc='center')
 
-    table.scale(1, 2)
+    table.scale(1, 4)
     plt.title("Weekly Schedule Table", fontweight='bold')
     plt.tight_layout()
     plt.savefig("weekly_schedule.png", dpi=300, bbox_inches="tight")

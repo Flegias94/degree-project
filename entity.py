@@ -79,9 +79,10 @@ class SubjectSession:
     name: str
     type: Literal["curs", "laborator", "seminar"]
     sgr: str = ''
+    room: str = ''
 
     def render(self):
-        return f"{self.name}\n{self.type}\n{self.sgr}"
+        return f"{self.name}\n{self.type}\n{self.sgr}\n{self.room}".strip()
 
 
 @dataclass
