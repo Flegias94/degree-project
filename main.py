@@ -23,10 +23,10 @@ class Subject:
     
     def get_sessions(self, students: 'Students'):
         sessions = []
+        for _ in range(self.ore_curs // 2):
+            sessions.append(SubjectSession(self.nume_materie, "curs"))
         for sgr in range(students.nr_semigrupe):
             sgr_name = f"sgr:{sgr+1}"
-            for _ in range(self.ore_curs // 2):
-                sessions.append(SubjectSession(self.nume_materie, "curs", sgr_name))
             for _ in range(self.ore_practice // 2):
                 sessions.append(SubjectSession(self.nume_materie, self.tip_ora, sgr_name))
         return sessions
@@ -51,7 +51,7 @@ class SubjectGroup:
 class SubjectSession:
     name: str
     type: Literal["curs", "laborator", "seminar"]
-    sgr: str
+    sgr: str = ''
 
     def render(self):
         return f"{self.name}\n{self.type}\n{self.sgr}"
