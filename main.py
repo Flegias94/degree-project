@@ -83,6 +83,30 @@ class StudentsGroup:
             if students.nume_specializare == profile_name and \
                 students.an_studiu == year:   
                 return students
+            
+@dataclass
+class Room:
+    id: int
+    sala: str
+    nr_locuri: int
+    scop: str
+
+    @classmethod
+    def from_json(cls, data):
+        if "int_start" in data:
+            del data["int_start"]
+        if "int_stop" in data:
+            del data["int_stop"]
+        return Room(**data)
+
+@dataclass
+class RoomGroups:
+    rooms: Sequence[Room]
+
+    @classmethod
+    def from_json(cls, data):
+        rooms = [Room.from_json(room) for room in data]
+        return cls(rooms)
 
 def load_subjects():
     with open("subjects.json", "r") as f:
@@ -92,7 +116,8 @@ def load_subjects():
 
 def load_rooms():
     with open("rooms.json", "r") as f:
-        rooms = json.load(f)
+        raw_rooms = json.load(f)
+    rooms = RoomGroups.from_json(raw_rooms)
     return rooms
 
 def load_students():
