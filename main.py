@@ -21,12 +21,14 @@ class Subject:
     def from_json(cls, data):
         return cls(**data)
     
-    def get_sessions(self):
+    def get_sessions(self, students: 'Students'):
         sessions = []
-        for _ in range(self.ore_curs // 2):
-            sessions.append(SubjectSession(self.nume_materie, "curs"))
-        for _ in range(self.ore_practice // 2):
-            sessions.append(SubjectSession(self.nume_materie, self.tip_ora))
+        for sgr in range(students.nr_semigrupe):
+            sgr_name = f"sgr:{sgr+1}"
+            for _ in range(self.ore_curs // 2):
+                sessions.append(SubjectSession(self.nume_materie, "curs", sgr_name))
+            for _ in range(self.ore_practice // 2):
+                sessions.append(SubjectSession(self.nume_materie, self.tip_ora, sgr_name))
         return sessions
 
 @dataclass
@@ -75,6 +77,12 @@ class StudentsGroup:
     def from_json(cls, data):
         students = [Students.from_json(students) for students in data]
         return cls(students)
+    
+    def get_for_year_name(self, profile_name: str, year: int) -> Students:
+        for students in self.students:
+            if students.nume_specializare == profile_name and \
+                students.an_studiu == year:   
+                return students
 
 def load_subjects():
     with open("subjects.json", "r") as f:
@@ -94,10 +102,13 @@ def load_students():
     return students
 
 def main():
+    students_group = load_students()
+    af1_students = students_group.get_for_year_name("AF", 1)
     subject_group = load_subjects()
     af1_subjects = subject_group.get_for_students("AF 1")
-    af1_subject_sessions = [session for subject in af1_subjects for session in subject.get_sessions()]
+    af1_subject_sessions = [session for subject in af1_subjects for session in subject.get_sessions(af1_students)]
     af1_subjects_names = [session.render() for session in af1_subject_sessions]
+
         
     pprint(af1_subjects)
     plotting({"Monday": af1_subjects_names[:6]})
