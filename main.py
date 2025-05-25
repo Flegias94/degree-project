@@ -10,9 +10,13 @@ def allocate(students_group: StudentsGroup, subject_group: SubjectGroup, rooms_g
     af1_subjects = subject_group.get_for_students("AF 1")
     af1_subject_sessions = [session for subject in af1_subjects for session in subject.get_sessions(af1_students)]
     for session in af1_subject_sessions:
-        session.room = rooms_group.rooms[0].sala
+        for room_type in ('curs', 'seminar', 'laborator'):
+            for room in rooms_group.get_rooms_for_type(room_type):
+                if session.type == room_type:
+                    successful = room.allocate(session)
+                    if successful:
+                        break
     af1_subjects_names = [session.render() for session in af1_subject_sessions]
-    
     pprint(af1_subjects)
     return {"Monday": af1_subjects_names[:6]}
     

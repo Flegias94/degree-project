@@ -46,6 +46,7 @@ class Room:
     sala: str
     nr_locuri: int
     scop: str
+    _allocated: int = 0
 
     @classmethod
     def from_json(cls, data):
@@ -55,6 +56,13 @@ class Room:
             del data["int_stop"]
         return Room(**data)
     
+    def allocate(self, session: 'SubjectSession') -> bool:
+        free_slots = self.nr_locuri - self._allocated
+        if free_slots >= session.how_many:
+            self._allocated += session.how_many
+            session.room = self.sala
+            return True
+        return False
 
 
 @dataclass
@@ -72,12 +80,20 @@ class RoomGroups:
             raw_data = json.load(f)
         data = cls.from_json(raw_data)
         return data
+    
+    def get_rooms_for_type(self, type_: str):
+        rooms: list[Room] = []
+        for room in self.rooms:
+            if room.scop == type_:
+                rooms.append(room)
+        return rooms
 
 
 @dataclass
 class SubjectSession:
     name: str
     type: Literal["curs", "laborator", "seminar"]
+    how_many: int 
     sgr: str = ''
     room: str = ''
 
@@ -104,11 +120,11 @@ class Subject:
     def get_sessions(self, students: 'Students'):
         sessions = []
         for _ in range(self.ore_curs // 2):
-            sessions.append(SubjectSession(self.nume_materie, "curs"))
+            sessions.append(SubjectSession(self.nume_materie, "curs", 10))
         for sgr in range(students.nr_semigrupe):
             sgr_name = f"sgr:{sgr+1}"
             for _ in range(self.ore_practice // 2):
-                sessions.append(SubjectSession(self.nume_materie, self.tip_ora, sgr_name))
+                sessions.append(SubjectSession(self.nume_materie, self.tip_ora, 10, sgr_name))
         return sessions
 
 
