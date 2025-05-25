@@ -32,6 +32,12 @@ class StudentsGroup:
             if students.nume_specializare == profile_name and \
                 students.an_studiu == year:
                 return students
+    @classmethod
+    def load(cls, path: str = "students.json"):
+        with open(path, "r") as f:
+            raw_data = json.load(f)
+        data = cls.from_json(raw_data)
+        return data
 
 
 @dataclass
@@ -48,6 +54,7 @@ class Room:
         if "int_stop" in data:
             del data["int_stop"]
         return Room(**data)
+    
 
 
 @dataclass
@@ -58,6 +65,13 @@ class RoomGroups:
     def from_json(cls, data):
         rooms = [Room.from_json(room) for room in data]
         return cls(rooms)
+    
+    @classmethod
+    def load(cls, path: str = "rooms.json"):
+        with open(path, "r") as f:
+            raw_data = json.load(f)
+        data = cls.from_json(raw_data)
+        return data
 
 
 @dataclass
@@ -112,24 +126,11 @@ class SubjectGroup:
             if subject.nume_specializare_mat == profile_name:
                 subjects.append(subject)
         return subjects
-
-
-def load_subjects():
-    with open("subjects.json", "r") as f:
-        raw_subjects = json.load(f)
-    subjects = SubjectGroup.from_json(raw_subjects)
-    return subjects
-
-
-def load_rooms():
-    with open("rooms.json", "r") as f:
-        raw_rooms = json.load(f)
-    rooms = RoomGroups.from_json(raw_rooms)
-    return rooms
-
-
-def load_students():
-    with open("students.json", "r") as f:
-        raw_students = json.load(f)
-    students = StudentsGroup.from_json(raw_students)
-    return students
+    
+    @classmethod
+    def load(cls, path: str = 'subjects.json'):
+        with open(path, "r") as f:
+            raw_data = json.load(f)
+        data = cls.from_json(raw_data)
+        return data
+   

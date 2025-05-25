@@ -2,17 +2,17 @@ from pprint import pprint
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from entity import load_students, load_subjects
+from entity import StudentsGroup, SubjectGroup, RoomGroups
+
 
 def main():
-    students_group = load_students()
+    students_group = StudentsGroup.load()
     af1_students = students_group.get_for_year_name("AF", 1)
-    subject_group = load_subjects()
+    subject_group = SubjectGroup.load()
     af1_subjects = subject_group.get_for_students("AF 1")
     af1_subject_sessions = [session for subject in af1_subjects for session in subject.get_sessions(af1_students)]
     af1_subjects_names = [session.render() for session in af1_subject_sessions]
-
-        
+    
     pprint(af1_subjects)
     plotting({"Monday": af1_subjects_names[:6]})
 
