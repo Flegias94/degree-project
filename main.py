@@ -5,16 +5,22 @@ import pandas as pd
 from entity import StudentsGroup, SubjectGroup, RoomGroups
 
 
-def main():
-    students_group = StudentsGroup.load()
+def allocate(students_group: StudentsGroup, subject_group: SubjectGroup, rooms_group: RoomGroups):
     af1_students = students_group.get_for_year_name("AF", 1)
-    subject_group = SubjectGroup.load()
     af1_subjects = subject_group.get_for_students("AF 1")
     af1_subject_sessions = [session for subject in af1_subjects for session in subject.get_sessions(af1_students)]
     af1_subjects_names = [session.render() for session in af1_subject_sessions]
     
     pprint(af1_subjects)
-    plotting({"Monday": af1_subjects_names[:6]})
+    return {"Monday": af1_subjects_names[:6]}
+    
+
+def main():
+    students_group = StudentsGroup.load()
+    subject_group = SubjectGroup.load()
+    rooms_group = RoomGroups.load()
+    allocations = allocate(students_group, subject_group, rooms_group)
+    plotting(allocations)
 
 def plotting(data: dict[str, list[str]]):
 
