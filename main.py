@@ -49,9 +49,32 @@ class SubjectGroup:
 class SubjectSession:
     name: str
     type: Literal["curs", "laborator", "seminar"]
+    sgr: str
 
     def render(self):
-        return f"{self.name}\n{self.type}"
+        return f"{self.name}\n{self.type}\n{self.sgr}"
+    
+@dataclass
+class Students:
+    id: int
+    nume_specializare: str
+    nr_studenti: int
+    nr_grupe: int
+    nr_semigrupe: int
+    an_studiu: int
+
+    @classmethod
+    def from_json(cls, data):
+        return Students(**data)
+    
+@dataclass
+class StudentsGroup:
+    students: Sequence[Students]
+
+    @classmethod
+    def from_json(cls, data):
+        students = [Students.from_json(students) for students in data]
+        return cls(students)
 
 def load_subjects():
     with open("subjects.json", "r") as f:
@@ -66,7 +89,8 @@ def load_rooms():
 
 def load_students():
     with open("students.json", "r") as f:
-        students = json.load(f)
+        raw_students = json.load(f)
+    students = StudentsGroup.from_json(raw_students)
     return students
 
 def main():
