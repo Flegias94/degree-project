@@ -1,64 +1,75 @@
-
 from ortools.sat.python import cp_model
+from pprint import pprint
+from entity import *
+from typing import Dict, List
 
+def allocate(students_group: StudentsGroup, subject_group: SubjectGroup, rooms_group: RoomGroups) -> Dict[str, list[str]]:
+    af1_students = students_group.get_for_year_name("AF", 1)
+    af1_subjects = subject_group.get_for_students("AF 1")
 
-groups = ["IE 1", "IE 2"]
-courses = ["Math", "Physics", "Chemistry"]
-time_slots = list(range(8))
-rooms_labels = ["A", "B"]
-rooms_indices = list(range(len(rooms_labels)))
+    af1_subject_sessions = [
+        session
+        for subject in af1_subjects
+        for session in subject.get_sessions(af1_students)
+    ]
 
-model = cp_model.CpModel()
+    for session in af1_subject_sessions:
+        for room_type in ('curs', 'seminar', 'laborator'):
+            for room in rooms_group.get_rooms_for_type(room_type):
+                if session.type == room_type:
+                    successful = room.allocate(session)
+                    if successful:
+                        break
 
-assignments = {}
+    af1_subjects_names = [session.render() for session in af1_subject_sessions]
 
-for g in groups:
-    for c in courses:
-        t = model.NewIntVar(0, len(time_slots) - 1, f"{g}_{c}_timeslot" )
-        r=  model.NewIntVar(0, len(rooms_labels) - 1, f"{g}_{c}_room" )
-        assignments[(g,c)] = (t,r)
+    return {"Monday": af1_subjects_names[:6]}  # This is still stubbed — later you'll expand to all days
 
-#constraints
+def solve_schedule(sessions: List[SubjectSession], rooms: List[Room], timeslots: List[Timeslot]):
+    model = cp_model.CpModel()
 
-for g in groups:
-    for i in range(len(courses)):
-        for j in range(i + 1, len(courses)):
-            ci = courses[i]
-            cj = courses[j]
-            ti, _ = assignments[(g, ci)]
-            tj, _ = assignments[(g, cj)]
-            model.Add(ti != tj)  # group can't have two courses at same time
+    # Step 1: Build variables
+    assignment = {}  # (session_idx, room_idx, timeslot_idx) -> BoolVar
 
+    for s_idx, session in enumerate(sessions):
+        for r_idx, room in enumerate(rooms):
+            if room.scop != session.type:
+                continue  # only rooms of the right type
 
-# Prevent two different group-course pairs from sharing the same room at the same time
-for t in time_slots:
-    for r in rooms_indices:
-        usages = []
-        for g in groups:
-            for c in courses:
-                var_t, var_r = assignments[(g, c)]
+            if room.nr_locuri < session.how_many:
+                continue  # room too small
 
-                b = model.NewBoolVar(f"{g}_{c}_at_{t}_{r}")
-                model.Add(var_t == t).OnlyEnforceIf(b)
-                model.Add(var_t != t).OnlyEnforceIf(b.Not())
-                model.Add(var_r == r).OnlyEnforceIf(b)
-                model.Add(var_r != r).OnlyEnforceIf(b.Not())
+            for t_idx, timeslot in enumerate(timeslots):
+                var = model.NewBoolVar(f"s{s_idx}_r{r_idx}_t{t_idx}")
+                assignment[(s_idx, r_idx, t_idx)] = var
 
-                usages.append(b)
+    # Step 2: Each session must be assigned exactly once
+    for s_idx in range(len(sessions)):
+        model.AddExactlyOne([
+            assignment[key] for key in assignment if key[0] == s_idx
+        ])
 
-        model.Add(sum(usages) <= 1)  # Only one course can use (t, r)
+    # Step 3: No room conflicts (at most one session per room+timeslot)
+    for r_idx in range(len(rooms)):
+        for t_idx in range(len(timeslots)):
+            model.AddAtMostOne([
+                assignment[key] for key in assignment
+                if key[1] == r_idx and key[2] == t_idx
+            ])
 
-print(f"Total variables: {len(model.Proto().variables)}")
-print(f"Total constraints: {len(model.Proto().constraints)}")
-solver = cp_model.CpSolver()
-status = solver.Solve(model)
+    # Step 4: No semigroup/student overlaps
+    # You’ll need a way to extract student groups per session, then prevent overlap
 
-if status in [cp_model.OPTIMAL, cp_model.FEASIBLE]:
-    for g in groups:
-        print(f"\nGroup {g}:")
-        for c in courses:
-            t, r = assignments[(g, c)]
-            room_name = rooms_labels[solver.Value(r)]
-            print(f"  {c}: Time Slot {solver.Value(t)}, Room {room_name}")
-else:
-    print("No valid schedule found.")
+    # Step 5 (Optional): Add scoring objective (e.g., morning vs evening)
+    # model.Maximize(...)
+
+    # Solve
+    solver = cp_model.CpSolver()
+    status = solver.Solve(model)
+
+    if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
+        for (s_idx, r_idx, t_idx), var in assignment.items():
+            if solver.Value(var) == 1:
+                print(f"{sessions[s_idx].name} -> {rooms[r_idx].sala} @ {timeslots[t_idx]}")
+    else:
+        print("No feasible schedule found.")

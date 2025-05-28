@@ -1,6 +1,6 @@
 import json
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal, Sequence
 
 
@@ -47,6 +47,7 @@ class Room:
     nr_locuri: int
     scop: str
     _allocated: int = 0
+    _allocated_sessions: list['SubjectSession'] = field(default_factory=list)
 
     @classmethod
     def from_json(cls, data):
@@ -60,10 +61,14 @@ class Room:
         free_slots = self.nr_locuri - self._allocated
         if free_slots >= session.how_many:
             self._allocated += session.how_many
-            session.room = self.sala
+            self._allocated_sessions.append(session)
+            session.room = self
             return True
         return False
-
+    
+    @property
+    def allocated(self):
+        return self._allocated_sessions
 
 @dataclass
 class RoomGroups:
@@ -95,10 +100,13 @@ class SubjectSession:
     type: Literal["curs", "laborator", "seminar"]
     how_many: int 
     sgr: str = ''
-    room: str = ''
+    room: Room = None
 
     def render(self):
-        return f"{self.name}\n{self.type}\n{self.sgr}\n{self.room}".strip()
+        if not self.room:
+            return f"{self.name}\n{self.type}\n "
+        sgr_str = ", ".join(map(lambda n: n.sgr, self.room.allocated))
+        return f"{self.name}\n{self.type}\n{sgr_str}\n{self.room.sala}".strip()
 
 
 @dataclass
@@ -117,14 +125,32 @@ class Subject:
     def from_json(cls, data):
         return cls(**data)
 
-    def get_sessions(self, students: 'Students'):
+    def get_sessions(self, students: 'Students') -> list['SubjectSession']:
         sessions = []
+        # Curs sessions (whole group)
         for _ in range(self.ore_curs // 2):
-            sessions.append(SubjectSession(self.nume_materie, "curs", 10))
-        for sgr in range(students.nr_semigrupe):
-            sgr_name = f"sgr:{sgr+1}"
+            sessions.append(SubjectSession(
+                name=self.nume_materie,
+                type="curs",
+                how_many=students.nr_studenti
+            ))
+
+        # Practice sessions for semigroups (seminar/lab)
+        semigroups = [f"sgr:{i+1}" for i in range(students.nr_semigrupe)]
+
+        # Pair semigroups (or handle last one if odd number)
+        for i in range(0, len(semigroups), 2):
+            pair = semigroups[i:i+2]
+            group_size = (students.nr_studenti // students.nr_semigrupe) * len(pair)
+
             for _ in range(self.ore_practice // 2):
-                sessions.append(SubjectSession(self.nume_materie, self.tip_ora, 10, sgr_name))
+                sessions.append(SubjectSession(
+                    name=self.nume_materie,
+                    type=self.tip_ora,
+                    how_many=group_size,
+                    sgr=", ".join(pair)
+                ))
+
         return sessions
 
 
@@ -150,4 +176,19 @@ class SubjectGroup:
             raw_data = json.load(f)
         data = cls.from_json(raw_data)
         return data
-   
+    
+@dataclass
+class Timeslot:
+    day: str
+    start_hour: int
+    duration: int = 2
+
+    def __str__(self):
+        return f"{self.day} {self.start_hour:02d}:00 - {self.start_hour + self.duration:02d}:00"
+
+@dataclass
+class RoomAllocation:
+    session: SubjectSession
+    room: Room
+    timeslot: Timeslot
+

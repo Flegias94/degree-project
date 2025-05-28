@@ -1,0 +1,64 @@
+output: sorted timetable
+what is the timetable
+a dict
+timetable = {Monday: ["A","B","C","D","E","F","G","H"],
+             Tuesday: ["A","B","C","D","E","F","G","H"],
+             Wednesday: ["A","B","C","D","E","F","G","H"],
+             Thursday: ["A","B","C","D","E","F","G","H"],
+             Friday: ["A","B","C","D","E","F","G","H"]}
+timetable_key = [Monday, Tuesday, Wednesday, Thursday, Friday]
+timetable_value = [...]
+
+timetable = dict(zip(timetable_key, timetable_value))
+
+
+
+weights_lab = {"8": 0, "10": 5, "12": 5, "14": 5, "16": 3, "18": 1, "20": 0}
+weights_course = {"8": 5, "10": 3, "12": 3, "14": 3, "16": 2, "18": 1, "20": 0}
+
+
+for session in sessions:
+    weights = get_weights(session["type"])
+    scored_times = [(t, weights[t]) for t in timeslots]
+    # Sort by score, highest first
+    scored_times.sort(key=lambda x: x[1], reverse=True)
+
+    print(f"{session['name']} ({session['type']}):")
+    for t, score in scored_times:
+        print(f"  {t}:00 -> score {score}")
+    print()
+
+@dataclass
+class Timeslot:
+    day: str
+    start_hour: int
+    duration: int = 2
+
+    def __str__(self):
+        return f"{self.day} {self.start_hour:02d}:00 - {self.start_hour + self.duration:02d}:00"
+
+@dataclass
+class RoomAllocation:
+    session: SubjectSession
+    room: Room
+    timeslot: Timeslot
+
+
+
+#getting lab/seminary with pairs of semigroups
+
+semigroups = [f"sgr:{i+1}" for i in range(students.nr_semigrupe)]
+
+#groups into pairs
+for i in range(0, len(semigroup), 2):
+    pair = semigroups[i:i+2]
+    for _ in range(self.ore_practice // 2):
+        sessions.append(
+            SubjectSession(
+                self.nume_materie,
+                self.tip_ora,
+                15 * len(pair)
+                sgr=", ".join(pair)
+            )
+        )
+    
