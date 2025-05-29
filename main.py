@@ -16,7 +16,7 @@ def main():
     sessions = [
         session
         for subject in af1_subjects
-        for session in subject.get_sessions(af1_students)
+        for session in subject.get_sessions(af1_students, rooms)
     ]
     allocator = RoomAllocation(rooms)
     schedule = allocator.allocate(sessions)

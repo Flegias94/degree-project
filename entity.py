@@ -1,8 +1,8 @@
+from __future__ import annotations
 import json
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Literal, Sequence, Set, Tuple
-
+from typing import Dict, List, Literal, Sequence, Set, Tuple, Union
 
 @dataclass
 class Students:
@@ -127,7 +127,7 @@ class Subject:
     def from_json(cls, data):
         return cls(**data)
 
-    def get_sessions(self, students: 'Students') -> list['SubjectSession']:
+    def get_sessions(self, students: 'Students', available_rooms: List['Room']) -> list['SubjectSession']:
         sessions = []
         # Curs sessions (whole group)
         for _ in range(self.ore_curs // 2):
@@ -137,22 +137,37 @@ class Subject:
                 how_many=students.nr_studenti
             ))
 
-        # Practice sessions for semigroups (seminar/lab)
+        # Determine groupings for practice/lab/seminar
         semigroups = [f"sgr:{i+1}" for i in range(students.nr_semigrupe)]
-        pair_count = self.ore_practice // 2
+        group_size = students.nr_studenti // students.nr_semigrupe
+        pair_size = group_size * 2
+        can_use_pairs = any(
+            room.scop == self.tip_ora and room.nr_locuri >= pair_size
+            for room in available_rooms
+        )
 
-        # Pair semigroups (or handle last one if odd number)
-        for i in range(0, len(semigroups), 2):
-            pair = semigroups[i:i+2]
-            group_size = (students.nr_studenti // students.nr_semigrupe) * len(pair)
-
-            for _ in range(pair_count):
-                sessions.append(SubjectSession(
-                    name=self.nume_materie,
-                    type=self.tip_ora,
-                    how_many=group_size,
-                    sgr=", ".join(pair)
-                ))
+        if can_use_pairs:
+            # Use semigroup pairs (default)
+            for i in range(0, len(semigroups), 2):
+                pair = semigroups[i:i+2]
+                size = group_size * len(pair)
+                for _ in range(self.ore_practice // 2):
+                    sessions.append(SubjectSession(
+                        name=self.nume_materie,
+                        type=self.tip_ora,
+                        how_many=size,
+                        sgr=", ".join(pair)
+                    ))
+        else:
+            # Fallback to individual semigroups
+            for sgr in semigroups:
+                for _ in range(self.ore_practice // 2):
+                    sessions.append(SubjectSession(
+                        name=self.nume_materie,
+                        type=self.tip_ora,
+                        how_many=group_size,
+                        sgr=sgr
+                    ))
 
         return sessions
 
@@ -192,7 +207,6 @@ class Timeslot:
 @dataclass
 class RoomAllocation:
     rooms: List[Room]
-
     schedule: Dict[str, List[SubjectSession | str]] = field(init=False)
     used_slots: Set[Tuple[int, str, int]] = field(default_factory=set)
 
@@ -202,25 +216,31 @@ class RoomAllocation:
             for day in ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
         }
     
-    def allocate(self, sessions: List[SubjectSession]) -> Dict[str, List[SubjectSession | str]]:
+    def allocate(self, sessions: List['SubjectSession']) -> Dict[str, List['SubjectSession' | str]]:
         week_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
         hour_blocks = [8, 10, 12, 14, 16, 18]
+        scorer = TimeSlotScorer()
 
-        session_index = 0
+        for session in sessions:
+            assigned = False
 
-        for day in week_days:
-            for slot_index, hour in enumerate(hour_blocks):
-                if session_index >= len(sessions):
-                    break
+            # Generate all day-hour combinations with their score and sort them descending
+            preferred_slots = [
+                (day, hour, scorer.get_score(session.type, hour))
+                for day in week_days
+                for hour in hour_blocks
+            ]
+            preferred_slots.sort(key=lambda x: x[2], reverse=True)
 
-                session = sessions[session_index]
-                assigned = False
+            for day, hour, _ in preferred_slots:
+                slot_index = hour_blocks.index(hour)
 
                 for room in self.rooms:
                     if (
                         room.scop == session.type and
                         room.nr_locuri >= session.how_many and
-                        (room.id, day, hour) not in self.used_slots
+                        (room.id, day, hour) not in self.used_slots and
+                        self.schedule[day][slot_index] == ""
                     ):
                         session.room = room
                         room._allocated_sessions.append(session)
@@ -229,12 +249,22 @@ class RoomAllocation:
                         assigned = True
                         break
 
-                if not assigned:
-                    self.schedule[day][slot_index] = f"{session.name} ({session.type}, {session.sgr})"
+                if assigned:
+                    break
 
-                session_index += 1
+            if not assigned:
+                # fallback: assign to first empty slot without checking room availability
+                for day in week_days:
+                    for slot_index, hour in enumerate(hour_blocks):
+                        if self.schedule[day][slot_index] == "":
+                            self.schedule[day][slot_index] = f"{session.name} ({session.type}, {session.sgr})"
+                            assigned = True
+                            break
+                    if assigned:
+                        break
 
         return self.schedule
+
 
 @dataclass
 class TimeSlotScorer:
@@ -256,3 +286,7 @@ class TimeSlotScorer:
             return self.weights_course.get(hour, 0)
         else:
             return self.weights_lab.get(hour, 0)
+        
+    def score_timeslots(self, session_type: Literal["curs", "seminar", "laborator"], hours: List[int]) -> List[Tuple[int, int]]:
+        scored = [(hour, self.get_score(session_type, hour)) for hour in hours]
+        return sorted(scored, key=lambda x: x[1], reverse=True)
