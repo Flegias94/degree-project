@@ -1,29 +1,9 @@
+from collections import defaultdict
 from ortools.sat.python import cp_model
 from pprint import pprint
 from entity import *
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
-def allocate(students_group: StudentsGroup, subject_group: SubjectGroup, rooms_group: RoomGroups) -> Dict[str, list[str]]:
-    af1_students = students_group.get_for_year_name("AF", 1)
-    af1_subjects = subject_group.get_for_students("AF 1")
-
-    af1_subject_sessions = [
-        session
-        for subject in af1_subjects
-        for session in subject.get_sessions(af1_students)
-    ]
-
-    for session in af1_subject_sessions:
-        for room_type in ('curs', 'seminar', 'laborator'):
-            for room in rooms_group.get_rooms_for_type(room_type):
-                if session.type == room_type:
-                    successful = room.allocate(session)
-                    if successful:
-                        break
-
-    af1_subjects_names = [session.render() for session in af1_subject_sessions]
-
-    return {"Monday": af1_subjects_names[:6]}  # This is still stubbed — later you'll expand to all days
 
 def solve_schedule(sessions: List[SubjectSession], rooms: List[Room], timeslots: List[Timeslot]):
     model = cp_model.CpModel()

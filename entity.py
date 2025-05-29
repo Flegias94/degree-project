@@ -1,7 +1,7 @@
 import json
 
 from dataclasses import dataclass, field
-from typing import Literal, Sequence
+from typing import Dict, List, Literal, Sequence, Set, Tuple
 
 
 @dataclass
@@ -103,10 +103,12 @@ class SubjectSession:
     room: Room = None
 
     def render(self):
-        if not self.room:
-            return f"{self.name}\n{self.type}\n "
-        sgr_str = ", ".join(map(lambda n: n.sgr, self.room.allocated))
-        return f"{self.name}\n{self.type}\n{sgr_str}\n{self.room.sala}".strip()
+        lines = [self.name, self.type]
+        if self.sgr:
+            lines.append(self.sgr)
+        if self.room:
+            lines.append(self.room.sala)
+        return "\n".join(lines)
 
 
 @dataclass
@@ -137,13 +139,14 @@ class Subject:
 
         # Practice sessions for semigroups (seminar/lab)
         semigroups = [f"sgr:{i+1}" for i in range(students.nr_semigrupe)]
+        pair_count = self.ore_practice // 2
 
         # Pair semigroups (or handle last one if odd number)
         for i in range(0, len(semigroups), 2):
             pair = semigroups[i:i+2]
             group_size = (students.nr_studenti // students.nr_semigrupe) * len(pair)
 
-            for _ in range(self.ore_practice // 2):
+            for _ in range(pair_count):
                 sessions.append(SubjectSession(
                     name=self.nume_materie,
                     type=self.tip_ora,
@@ -188,7 +191,68 @@ class Timeslot:
 
 @dataclass
 class RoomAllocation:
-    session: SubjectSession
-    room: Room
-    timeslot: Timeslot
+    rooms: List[Room]
 
+    schedule: Dict[str, List[SubjectSession | str]] = field(init=False)
+    used_slots: Set[Tuple[int, str, int]] = field(default_factory=set)
+
+    def __post_init__(self):
+        self.schedule = {
+            day: [""] * 6
+            for day in ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+        }
+    
+    def allocate(self, sessions: List[SubjectSession]) -> Dict[str, List[SubjectSession | str]]:
+        week_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+        hour_blocks = [8, 10, 12, 14, 16, 18]
+
+        session_index = 0
+
+        for day in week_days:
+            for slot_index, hour in enumerate(hour_blocks):
+                if session_index >= len(sessions):
+                    break
+
+                session = sessions[session_index]
+                assigned = False
+
+                for room in self.rooms:
+                    if (
+                        room.scop == session.type and
+                        room.nr_locuri >= session.how_many and
+                        (room.id, day, hour) not in self.used_slots
+                    ):
+                        session.room = room
+                        room._allocated_sessions.append(session)
+                        self.used_slots.add((room.id, day, hour))
+                        self.schedule[day][slot_index] = session
+                        assigned = True
+                        break
+
+                if not assigned:
+                    self.schedule[day][slot_index] = f"{session.name} ({session.type}, {session.sgr})"
+
+                session_index += 1
+
+        return self.schedule
+
+@dataclass
+class TimeSlotScorer:
+    weights_course: Dict[int, int] = None
+    weights_lab: Dict[int, int] = None
+
+    def __post_init__(self):
+        if self.weights_course is None:
+            self.weights_course = {
+                8: 5, 10: 3, 12: 3, 14: 3, 16: 2, 18: 1, 20: 0
+            }
+        if self.weights_lab is None:
+            self.weights_lab = {
+                8: 0, 10: 5, 12: 5, 14: 5, 16: 3, 18: 1, 20: 0
+            }
+
+    def get_score(self, session_type: Literal["curs", "seminar", "laborator"], hour: int) -> int:
+        if session_type == "curs":
+            return self.weights_course.get(hour, 0)
+        else:
+            return self.weights_lab.get(hour, 0)

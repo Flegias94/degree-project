@@ -2,16 +2,25 @@ from pprint import pprint
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from entity import StudentsGroup, SubjectGroup, RoomGroups
-from algorithm import allocate
+from entity import StudentsGroup, SubjectGroup, RoomGroups, RoomAllocation
     
 
 def main():
     students_group = StudentsGroup.load()
     subject_group = SubjectGroup.load()
     rooms_group = RoomGroups.load()
-    allocations = allocate(students_group, subject_group, rooms_group)
-    plotting(allocations)
+    rooms = rooms_group.rooms
+
+    af1_students = students_group.get_for_year_name("AF", 1)
+    af1_subjects = subject_group.get_for_students("AF 1")
+    sessions = [
+        session
+        for subject in af1_subjects
+        for session in subject.get_sessions(af1_students)
+    ]
+    allocator = RoomAllocation(rooms)
+    schedule = allocator.allocate(sessions)
+    plotting(schedule)
 
 def plotting(data: dict[str, list[str]]):
 
@@ -22,10 +31,13 @@ def plotting(data: dict[str, list[str]]):
 
     for day, schedule in data.items():
         for index, subject in enumerate(schedule):
-            schedule_df.iloc[index, schedule_df.columns.get_loc(day)] = subject 
+            if isinstance(subject, str):
+                schedule_df.iloc[index, schedule_df.columns.get_loc(day)] = subject
+            else:
+                schedule_df.iloc[index, schedule_df.columns.get_loc(day)] = subject.render()
 
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(12, 7))
     ax.axis('off')
     table = ax.table(cellText=schedule_df.values,
                     rowLabels=schedule_df.index,
@@ -33,10 +45,13 @@ def plotting(data: dict[str, list[str]]):
                     cellLoc='center',
                     loc='center')
 
-    table.scale(1, 4)
+    table.auto_set_font_size(False)
+    table.set_fontsize(12)
+
+    table.scale(1, 5)
     plt.title("Weekly Schedule Table", fontweight='bold')
     plt.tight_layout()
-    plt.savefig("weekly_schedule.png", dpi=300, bbox_inches="tight")
+    plt.savefig("weekly_schedule.png", dpi=600, bbox_inches="tight")
     plt.show()
 
 
