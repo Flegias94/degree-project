@@ -178,3 +178,4 @@ pyvenv.cfg
 Scripts/
 fisier.txt
 *.png
+.vscode/

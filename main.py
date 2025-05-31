@@ -2,25 +2,25 @@ from pprint import pprint
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from entity import StudentsGroup, SubjectGroup, RoomGroups, RoomAllocation
-    
+from entity import StudentsGroup, SubjectGroup, RoomGroups, RoomAllocation, MultiSpecializationScheduler
+
 
 def main():
     students_group = StudentsGroup.load()
     subject_group = SubjectGroup.load()
     rooms_group = RoomGroups.load()
-    rooms = rooms_group.rooms
 
-    af1_students = students_group.get_for_year_name("AF", 1)
-    af1_subjects = subject_group.get_for_students("AF 1")
-    sessions = [
-        session
-        for subject in af1_subjects
-        for session in subject.get_sessions(af1_students, rooms)
-    ]
-    allocator = RoomAllocation(rooms)
-    schedule = allocator.allocate(sessions)
-    plotting(schedule)
+    scheduler = MultiSpecializationScheduler(
+        students_group=students_group,
+        subject_group=subject_group,
+        rooms=rooms_group.rooms
+    )
+
+    scheduler.generate_all()
+
+    target_spec = "IE 1"  
+    schedule = scheduler.get_schedule(target_spec)
+    # plotting(schedule)
 
 def plotting(data: dict[str, list[str]]):
 

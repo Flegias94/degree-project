@@ -206,16 +206,15 @@ class Timeslot:
 
 @dataclass
 class RoomAllocation:
-    rooms: List[Room]
-    schedule: Dict[str, List[SubjectSession | str]] = field(init=False)
+    rooms: List['Room']
     used_slots: Set[Tuple[int, str, int]] = field(default_factory=set)
+    schedule: Dict[str, List['SubjectSession' | str]] = field(init=False)
 
     def __post_init__(self):
         self.schedule = {
-            day: [""] * 6
-            for day in ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+            day: [""] * 6 for day in ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
         }
-    
+
     def allocate(self, sessions: List['SubjectSession']) -> Dict[str, List['SubjectSession' | str]]:
         week_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
         hour_blocks = [8, 10, 12, 14, 16, 18]
@@ -224,7 +223,6 @@ class RoomAllocation:
         for session in sessions:
             assigned = False
 
-            # Generate all day-hour combinations with their score and sort them descending
             preferred_slots = [
                 (day, hour, scorer.get_score(session.type, hour))
                 for day in week_days
@@ -253,7 +251,6 @@ class RoomAllocation:
                     break
 
             if not assigned:
-                # fallback: assign to first empty slot without checking room availability
                 for day in week_days:
                     for slot_index, hour in enumerate(hour_blocks):
                         if self.schedule[day][slot_index] == "":
@@ -290,3 +287,32 @@ class TimeSlotScorer:
     def score_timeslots(self, session_type: Literal["curs", "seminar", "laborator"], hours: List[int]) -> List[Tuple[int, int]]:
         scored = [(hour, self.get_score(session_type, hour)) for hour in hours]
         return sorted(scored, key=lambda x: x[1], reverse=True)
+
+@dataclass
+class MultiSpecializationScheduler:
+    students_group: 'StudentsGroup'
+    subject_group: 'SubjectGroup'
+    rooms: List['Room']
+    schedules: Dict[str, Dict[str, List['SubjectSession' | str]]] = field(default_factory=dict)
+    used_slots: Set[Tuple[int, str, int]] = field(default_factory=set)
+
+    def generate_all(self):
+        for student in self.students_group.students:
+            profile_name = f"{student.nume_specializare} {student.an_studiu}"
+            subjects = self.subject_group.get_for_students(profile_name)
+
+            sessions = [
+                session
+                for subject in subjects
+                for session in subject.get_sessions(student, self.rooms)
+            ]
+
+            allocator = RoomAllocation(self.rooms, self.used_slots)
+            schedule = allocator.allocate(sessions)
+            self.schedules[profile_name] = schedule
+
+    def get_schedule(self, profile_name: str) -> Dict[str, List['SubjectSession' | str]]:
+        return self.schedules.get(profile_name, {})
+
+    def list_profiles(self) -> List[str]:
+        return list(self.schedules.keys())
