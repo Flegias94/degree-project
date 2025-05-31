@@ -1,8 +1,9 @@
-from __future__ import annotations
 import json
-
+import math
+import textwrap
 from dataclasses import dataclass, field
-from typing import Dict, List, Literal, Sequence, Set, Tuple, Union
+from typing import Dict, List, Literal, Sequence, Set, Tuple
+
 
 @dataclass
 class Students:
@@ -30,8 +31,9 @@ class StudentsGroup:
     def get_for_year_name(self, profile_name: str, year: int) -> Students:
         for students in self.students:
             if students.nume_specializare == profile_name and \
-                students.an_studiu == year:
+                    students.an_studiu == year:
                 return students
+
     @classmethod
     def load(cls, path: str = "students.json"):
         with open(path, "r") as f:
@@ -56,7 +58,7 @@ class Room:
         if "int_stop" in data:
             del data["int_stop"]
         return Room(**data)
-    
+
     def allocate(self, session: 'SubjectSession') -> bool:
         free_slots = self.nr_locuri - self._allocated
         if free_slots >= session.how_many:
@@ -65,10 +67,11 @@ class Room:
             session.room = self
             return True
         return False
-    
+
     @property
     def allocated(self):
         return self._allocated_sessions
+
 
 @dataclass
 class RoomGroups:
@@ -78,14 +81,14 @@ class RoomGroups:
     def from_json(cls, data):
         rooms = [Room.from_json(room) for room in data]
         return cls(rooms)
-    
+
     @classmethod
     def load(cls, path: str = "rooms.json"):
         with open(path, "r") as f:
             raw_data = json.load(f)
         data = cls.from_json(raw_data)
         return data
-    
+
     def get_rooms_for_type(self, type_: str):
         rooms: list[Room] = []
         for room in self.rooms:
@@ -98,12 +101,13 @@ class RoomGroups:
 class SubjectSession:
     name: str
     type: Literal["curs", "laborator", "seminar"]
-    how_many: int 
+    how_many: int
     sgr: str = ''
     room: Room = None
 
     def render(self):
-        lines = [self.name, self.type]
+        name = '\n'.join(textwrap.wrap(self.name, width=20))
+        lines = [name, self.type]
         if self.sgr:
             lines.append(self.sgr)
         if self.room:
@@ -130,7 +134,7 @@ class Subject:
     def get_sessions(self, students: 'Students', available_rooms: List['Room']) -> list['SubjectSession']:
         sessions = []
         # Curs sessions (whole group)
-        for _ in range(self.ore_curs // 2):
+        for _ in range(math.ceil(self.ore_curs / 2)):
             sessions.append(SubjectSession(
                 name=self.nume_materie,
                 type="curs",
@@ -138,7 +142,7 @@ class Subject:
             ))
 
         # Determine groupings for practice/lab/seminar
-        semigroups = [f"sgr:{i+1}" for i in range(students.nr_semigrupe)]
+        semigroups = [f"sgr:{i + 1}" for i in range(students.nr_semigrupe)]
         group_size = students.nr_studenti // students.nr_semigrupe
         pair_size = group_size * 2
         can_use_pairs = any(
@@ -149,9 +153,9 @@ class Subject:
         if can_use_pairs:
             # Use semigroup pairs (default)
             for i in range(0, len(semigroups), 2):
-                pair = semigroups[i:i+2]
+                pair = semigroups[i:i + 2]
                 size = group_size * len(pair)
-                for _ in range(self.ore_practice // 2):
+                for _ in range(math.ceil(self.ore_practice / 2)):
                     sessions.append(SubjectSession(
                         name=self.nume_materie,
                         type=self.tip_ora,
@@ -161,7 +165,7 @@ class Subject:
         else:
             # Fallback to individual semigroups
             for sgr in semigroups:
-                for _ in range(self.ore_practice // 2):
+                for _ in range(math.ceil(self.ore_practice / 2)):
                     sessions.append(SubjectSession(
                         name=self.nume_materie,
                         type=self.tip_ora,
@@ -187,14 +191,15 @@ class SubjectGroup:
             if subject.nume_specializare_mat == profile_name:
                 subjects.append(subject)
         return subjects
-    
+
     @classmethod
     def load(cls, path: str = 'subjects.json'):
         with open(path, "r") as f:
             raw_data = json.load(f)
         data = cls.from_json(raw_data)
         return data
-    
+
+
 @dataclass
 class Timeslot:
     day: str
@@ -203,6 +208,7 @@ class Timeslot:
 
     def __str__(self):
         return f"{self.day} {self.start_hour:02d}:00 - {self.start_hour + self.duration:02d}:00"
+
 
 @dataclass
 class RoomAllocation:
@@ -235,10 +241,10 @@ class RoomAllocation:
 
                 for room in self.rooms:
                     if (
-                        room.scop == session.type and
-                        room.nr_locuri >= session.how_many and
-                        (room.id, day, hour) not in self.used_slots and
-                        self.schedule[day][slot_index] == ""
+                            room.scop == session.type and
+                            room.nr_locuri >= session.how_many and
+                            (room.id, day, hour) not in self.used_slots and
+                            self.schedule[day][slot_index] == ""
                     ):
                         session.room = room
                         room._allocated_sessions.append(session)
@@ -283,10 +289,12 @@ class TimeSlotScorer:
             return self.weights_course.get(hour, 0)
         else:
             return self.weights_lab.get(hour, 0)
-        
-    def score_timeslots(self, session_type: Literal["curs", "seminar", "laborator"], hours: List[int]) -> List[Tuple[int, int]]:
+
+    def score_timeslots(self, session_type: Literal["curs", "seminar", "laborator"], hours: List[int]) -> List[
+        Tuple[int, int]]:
         scored = [(hour, self.get_score(session_type, hour)) for hour in hours]
         return sorted(scored, key=lambda x: x[1], reverse=True)
+
 
 @dataclass
 class MultiSpecializationScheduler:
