@@ -31,7 +31,7 @@ def plotting(schedule_by_group: dict[str, dict[str, list[str]]]):
 
     row_height = 2.0  # just a bit taller
     rows_per_day = 1 + len(time_labels)
-    total_rows = rows_per_day * len(week_days)
+    total_rows = rows_per_day * len(week_days) - 1
     n_cols = len(semigroups)
 
     fig_width = n_cols * 2.5
@@ -91,14 +91,24 @@ def plotting(schedule_by_group: dict[str, dict[str, list[str]]]):
     }
 
     for i, day in enumerate(week_days):
+        # Skip last weekday header row if no time slots after it
+        if i == len(week_days) - 1:
+            is_last_day = True
+        else:
+            is_last_day = False
         base_row = total_rows - i * rows_per_day - 1
 
-        # Day title row
-        y_day = (base_row + 1) * row_height
-        ax.add_patch(Rectangle((0, y_day), n_cols, row_height,
-                               facecolor="#cccccc", edgecolor='black'))
-        ax.text(n_cols / 2, y_day + row_height / 2, day,
-                ha='center', va='center', fontsize=11, fontweight='bold')
+        if not is_last_day or any(
+                any(schedule_by_group.get(sg, {}).get(day, []))
+                for sg in semigroups
+        ):
+            # Only draw the day label row if it's not the last day,
+            # or if there is actually content under it
+            y_day = (base_row + 1) * row_height
+            ax.add_patch(Rectangle((0, y_day), n_cols, row_height,
+                                   facecolor="#cccccc", edgecolor='black'))
+            ax.text(n_cols / 2, y_day + row_height / 2, day,
+                    ha='center', va='center', fontsize=11, fontweight='bold')
 
         # Time slots
         for t_idx, hour in enumerate(time_labels):
