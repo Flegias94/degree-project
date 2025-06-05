@@ -1,9 +1,5 @@
-import matplotlib.pyplot as plt
-from plot_schedule import plot_schedule
-from matplotlib.patches import Rectangle
-import textwrap
-
 from entity import StudentsGroup, SubjectGroup, RoomGroups, MultiSpecializationScheduler
+from plot_schedule import plot_schedule
 
 
 def main():
@@ -21,7 +17,7 @@ def main():
 
     target_spec = "IE 2"
     schedules = {k: scheduler.get_schedule(k) for k in scheduler.list_profiles() if k.startswith(target_spec)}
-    plot_schedule(schedules)
+    plot_schedule(schedules, open_file=True)
 
 
 if __name__ == "__main__":

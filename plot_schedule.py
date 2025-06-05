@@ -1,11 +1,27 @@
-# plot_schedule.py
+import os
+import textwrap
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
-import textwrap
+
+ROW_HEIGHT = 2.0
+FIGURE_WIDTH_PER_COL = 2.5
+
+FONT_SIZE_TITLE = 16
+FONT_SIZE_GROUP_HEADER = 14
+FONT_SIZE_WEEKDAY = 18
+FONT_SIZE_HOUR_LABEL = 13
+FONT_SIZE_CELL_TEXT = 11
+FONT_SIZE_CURS_CELL = 16
+
+COLOR_CURS = "#666666"
+COLOR_SEMINAR = "#7B3F3F"
+COLOR_LAB = "#2E5A2E"
+COLOR_OTHER = "#888888"
+COLOR_DAY_BG = "#cccccc"
 
 
-def draw_cell(ax, row, col, colspan, row_height, text, color, fontsize=11):
+def draw_cell(ax, row, col, colspan, row_height, text, color, fontsize=FONT_SIZE_CELL_TEXT):
     y = row * row_height
     wrapped = "\n".join(textwrap.wrap(text, width=25))
     rect = Rectangle((col, y), colspan, row_height, facecolor=color, edgecolor='black')
@@ -17,7 +33,7 @@ def draw_cell(ax, row, col, colspan, row_height, text, color, fontsize=11):
 def draw_group_headers(ax, semigroups, row_height, total_rows):
     for j, sg in enumerate(semigroups):
         y = total_rows * row_height + 1.5 * row_height
-        ax.text(j + 0.5, y, sg, ha='center', va='center', fontsize=14, fontweight='bold')
+        ax.text(j + 0.5, y, sg, ha='center', va='center', fontsize=FONT_SIZE_GROUP_HEADER, fontweight='bold')
 
 
 def draw_grid(ax, total_rows, row_height, n_cols, schedule_by_group, semigroups, time_labels, week_days):
@@ -59,13 +75,14 @@ def draw_day_and_slots(ax, day, i, week_days, time_labels, schedule_by_group, se
     is_last_day = (i == len(week_days) - 1)
     if not is_last_day or any(any(schedule_by_group.get(sg, {}).get(day, [])) for sg in semigroups):
         y_day = (base_row + 1) * row_height
-        ax.add_patch(Rectangle((0, y_day), n_cols, row_height, facecolor="#cccccc", edgecolor='black'))
-        ax.text(n_cols / 2, y_day + row_height / 2, day, ha='center', va='center', fontsize=18, fontweight='bold')
+        ax.add_patch(Rectangle((0, y_day), n_cols, row_height, facecolor=COLOR_DAY_BG, edgecolor='black'))
+        ax.text(n_cols / 2, y_day + row_height / 2, day, ha='center', va='center', fontsize=FONT_SIZE_WEEKDAY,
+                fontweight='bold')
 
     for t_idx, hour in enumerate(time_labels):
         row = base_row - t_idx
         y = row * row_height
-        ax.text(-0.1, y + row_height / 2, hour, ha='right', va='center', fontsize=13)
+        ax.text(-0.1, y + row_height / 2, hour, ha='right', va='center', fontsize=FONT_SIZE_HOUR_LABEL)
 
         text_map = {}
         for col, sg in enumerate(semigroups):
@@ -86,7 +103,7 @@ def draw_day_and_slots(ax, day, i, week_days, time_labels, schedule_by_group, se
             colspan = end_col - start_col + 1 if typ == "curs" else 1
 
             if typ == "curs":
-                draw_cell(ax, row, start_col, colspan, row_height, text, color, fontsize=16)
+                draw_cell(ax, row, start_col, colspan, row_height, text, color, fontsize=FONT_SIZE_CURS_CELL)
             else:
                 for col in cols:
                     draw_cell(ax, row, col, 1, row_height, text, color)
@@ -96,16 +113,17 @@ def draw_day_and_slots(ax, day, i, week_days, time_labels, schedule_by_group, se
                 draw_cell(ax, row, col, 1, row_height, "", "white")
 
 
-def plot_schedule(schedule_by_group: dict[str, dict[str, list[str]]]):
+def plot_schedule(schedule_by_group: dict[str, dict[str, list[str]]], open_file=False,
+                  save_path="schedule_plot.png"):
     semigroups = sorted(schedule_by_group.keys())
     week_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
     time_labels = ["08:00", "10:00", "12:00", "14:00", "16:00", "18:00"]
-    row_height = 2.0
+    row_height = ROW_HEIGHT
     rows_per_day = 1 + len(time_labels)
     total_rows = rows_per_day * len(week_days) - 1
     n_cols = len(semigroups)
 
-    fig_width = n_cols * 2.5
+    fig_width = n_cols * FIGURE_WIDTH_PER_COL
     fig_height = total_rows * row_height
     fig, ax = plt.subplots(figsize=(fig_width, fig_height))
 
@@ -113,10 +131,10 @@ def plot_schedule(schedule_by_group: dict[str, dict[str, list[str]]]):
     draw_group_headers(ax, semigroups, row_height, total_rows)
 
     colors = {
-        "curs": "#666666",
-        "seminar": "#7B3F3F",
-        "lab": "#2E5A2E",
-        "other": "#888888"
+        "curs": COLOR_CURS,
+        "seminar": COLOR_SEMINAR,
+        "lab": COLOR_LAB,
+        "other": COLOR_OTHER,
     }
 
     for i, day in enumerate(week_days):
@@ -126,6 +144,8 @@ def plot_schedule(schedule_by_group: dict[str, dict[str, list[str]]]):
     ax.set_xlim(0, n_cols)
     ax.set_ylim(0, total_rows * row_height + 2 * row_height)
     ax.axis('off')
-    ax.set_title("Schedule", fontsize=16, fontweight='bold')
+    ax.set_title("Schedule", fontsize=FONT_SIZE_TITLE, fontweight='bold')
     plt.tight_layout()
-    plt.savefig("schedule_plot.png", dpi=240, bbox_inches="tight")
+    plt.savefig(save_path, dpi=240, bbox_inches="tight")
+    if open_file:
+        os.startfile(save_path)
