@@ -108,10 +108,10 @@ class SubjectSession:
     room: Room = None
 
     def render(self):
-        name = '\n'.join(textwrap.wrap(self.name, width=20))
-        lines = [name, self.type]
+        name = '\n'.join(textwrap.wrap(self.name, width=22))
+        lines = [name, f"({self.type})"]
         if self.sgr:
-            lines.append(self.sgr)
+            lines.append(f"{self.sgr}")
         if self.room:
             lines.append(self.room.sala)
         return "\n".join(lines)
@@ -307,22 +307,92 @@ class MultiSpecializationScheduler:
     used_slots: Set[Tuple[int, str, int]] = field(default_factory=set)
 
     def generate_all(self):
+        grouped_sessions: Dict[str, List[SubjectSession]] = {}
+        shared_course_schedules: Dict[str, Dict[str, List[SubjectSession | str]]] = {}
+
+        # Step 1: Allocate course sessions only once per specialization-year
+        for student in self.students_group.students:
+            profile_name = f"{student.nume_specializare} {student.an_studiu}"
+            subjects = self.subject_group.get_for_students(profile_name)
+            grouped_sessions[profile_name] = []
+
+            for subject in subjects:
+                if subject.ore_curs:
+                    grouped_sessions[profile_name] += [
+                        SubjectSession(
+                            name=subject.nume_materie,
+                            type="curs",
+                            how_many=student.nr_studenti
+                        ) for _ in range(subject.ore_curs // 2)
+                    ]
+
+            # Allocate these course sessions once
+            allocator = RoomAllocation(self.rooms, self.used_slots)
+            shared_schedule = allocator.allocate(grouped_sessions[profile_name])
+            shared_course_schedules[profile_name] = shared_schedule
+
+        # Step 2: Allocate seminars/labs individually per semigroup
         for student in self.students_group.students:
             profile_name = f"{student.nume_specializare} {student.an_studiu}"
             subjects = self.subject_group.get_for_students(profile_name)
 
-            sessions = [
-                session
-                for subject in subjects
-                for session in subject.get_sessions(student, self.rooms)
-            ]
+            for group in range(student.nr_grupe):
+                for suffix in ['a', 'b']:
+                    label = f"{profile_name}_grupa{group + 1}{suffix}"
+                    sessions = []
 
-            allocator = RoomAllocation(self.rooms, self.used_slots)
-            schedule = allocator.allocate(sessions)
-            self.schedules[profile_name] = schedule
+                    for subject in subjects:
+                        size = student.nr_studenti // student.nr_semigrupe
+                        sessions += [
+                            SubjectSession(
+                                name=subject.nume_materie,
+                                type=subject.tip_ora,
+                                how_many=size,
+                                sgr=label.split('_')[-1]
+                            ) for _ in range(subject.ore_practice // 2)
+                        ]
+
+                    allocator = RoomAllocation(self.rooms, self.used_slots)
+                    schedule = allocator.allocate(sessions)
+
+                    # Inject the shared course sessions for this semigroup
+                    for day in schedule:
+                        for i in range(6):
+                            shared_cell = shared_course_schedules[profile_name][day][i]
+                            if isinstance(shared_cell, SubjectSession):
+                                if not schedule[day][i]:
+                                    schedule[day][i] = shared_cell
+                                else:
+                                    # Append without duplication
+                                    if isinstance(schedule[day][i], SubjectSession):
+                                        if schedule[day][i].name != shared_cell.name:
+                                            schedule[day][i] = f"{schedule[day][i].render()}\n---\n{shared_cell.render()}"
+                                    else:
+                                        schedule[day][i] += f"\n---\n{shared_cell.render()}"
+
+                    self.schedules[label] = schedule
+
 
     def get_schedule(self, profile_name: str) -> Dict[str, List['SubjectSession' | str]]:
         return self.schedules.get(profile_name, {})
 
     def list_profiles(self) -> List[str]:
         return list(self.schedules.keys())
+
+    def get_combined_schedule(self, specialization_year: str) -> Dict[str, List['SubjectSession' | str]]:
+        from collections import defaultdict
+
+        combined_schedule = defaultdict(lambda: [""] * 6)
+
+        for key, schedule in self.schedules.items():
+            if key.startswith(specialization_year):
+                for day, sessions in schedule.items():
+                    for i, session in enumerate(sessions):
+                        if session:
+                            rendered = session if isinstance(session, str) else session.render()
+                            if combined_schedule[day][i]:
+                                combined_schedule[day][i] += f"\n---\n{rendered}"
+                            else:
+                                combined_schedule[day][i] = rendered
+
+        return combined_schedule
