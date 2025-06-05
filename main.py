@@ -24,7 +24,6 @@ def main():
     plotting(schedules)
 
 
-
 def plotting(schedule_by_group: dict[str, dict[str, list[str]]]):
     semigroups = sorted(schedule_by_group.keys())
     week_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
@@ -39,17 +38,49 @@ def plotting(schedule_by_group: dict[str, dict[str, list[str]]]):
     fig_height = total_rows * row_height
     fig, ax = plt.subplots(figsize=(fig_width, fig_height))
 
-    # Grid
+    # Grid (horizontal lines)
     for i in range(total_rows + 1):
         y = i * row_height
         ax.axhline(y, color='black', linewidth=0.5)
-    for j in range(n_cols + 1):
-        ax.axvline(j, color='black', linewidth=0.5)
 
-    # Header
+    # Grid (vertical lines) – skip if line falls inside a merged 'curs' cell
+    for j in range(n_cols + 1):
+        skip = False
+        for day in week_days:
+            for t_idx, hour in enumerate(time_labels):
+                # Collect all columns where this time slot is a 'curs'
+                curs_cols = []
+                for idx, sg in enumerate(semigroups):
+                    session_list = schedule_by_group.get(sg, {}).get(day, [])
+                    if t_idx < len(session_list):
+                        session = session_list[t_idx]
+                        if hasattr(session, "render"):
+                            session = session.render()
+                        if isinstance(session, str) and "curs" in session.lower():
+                            curs_cols.append(idx)
+                if len(curs_cols) > 1 and min(curs_cols) < j <= max(curs_cols):
+                    skip = True
+                    break
+            if skip:
+                break
+        if not skip:
+            ax.axvline(j, color='black', linewidth=0.5)
+
+        # Extend vertical lines through the weekday + group header rows
+        group_header_bottom = total_rows * row_height + row_height  # where "Monday" row starts
+        group_header_top = total_rows * row_height + 2.0 * row_height  # top edge of group label row
+
+        for j in range(n_cols + 1):
+            ax.plot([j, j], [group_header_bottom, group_header_top], color='black', linewidth=0.5)
+
+        # Draw top horizontal line above the group header row
+        ax.plot([0, n_cols], [group_header_top, group_header_top], color='black', linewidth=0.5)
+
+    # Header (shifted group names one row higher)
     for j, sg in enumerate(semigroups):
-        ax.text(j + 0.5, total_rows * row_height + 0.3 * row_height,
-                sg, ha='center', va='bottom', fontsize=10, fontweight='bold')
+        group_y_center = total_rows * row_height + 1.5 * row_height
+        ax.text(j + 0.5, group_y_center,
+                sg, ha='center', va='center', fontsize=12, fontweight='bold')
 
     # Colors
     colors = {
@@ -101,21 +132,29 @@ def plotting(schedule_by_group: dict[str, dict[str, list[str]]]):
                     for col in cols:
                         draw_cell(ax, row, col, 1, row_height, text, color)
 
+            # Draw empty cells where nothing was placed
+            for col in range(n_cols):
+                if col not in [c for cols in text_map.values() for c in cols]:
+                    draw_cell(ax, row, col, 1, row_height, "", "white")
+
     ax.set_xlim(0, n_cols)
-    ax.set_ylim(0, total_rows * row_height + 1.5 * row_height)
+    ax.set_ylim(0, total_rows * row_height + 2 * row_height)
     ax.axis('off')
     ax.set_title("Schedule", fontsize=16, fontweight='bold')
     plt.tight_layout()
-    plt.show()
+    plt.savefig("schedule_plot.png", dpi=240, bbox_inches="tight")
 
-def draw_cell(ax, row, col, colspan, row_height, text, color):
+
+def draw_cell(ax, row, col, colspan, row_height, text, color, edgecolor='black', textcolor='white'):
     y = row * row_height
     wrapped = "\n".join(textwrap.wrap(text, width=25))
     rect = Rectangle((col, y), colspan, row_height,
-                     facecolor=color, edgecolor='black')
+                     facecolor=color, edgecolor=edgecolor)
     ax.add_patch(rect)
-    ax.text(col + colspan / 2, y + row_height / 2, wrapped,
-            ha='center', va='center', fontsize=9, color='white')
+    if text.strip():
+        ax.text(col + colspan / 2, y + row_height / 2, wrapped,
+                ha='center', va='center', fontsize=9, color=textcolor)
+
 
 if __name__ == "__main__":
     main()
