@@ -80,7 +80,7 @@ def plotting(schedule_by_group: dict[str, dict[str, list[str]]]):
     for j, sg in enumerate(semigroups):
         group_y_center = total_rows * row_height + 1.5 * row_height
         ax.text(j + 0.5, group_y_center,
-                sg, ha='center', va='center', fontsize=12, fontweight='bold')
+                sg, ha='center', va='center', fontsize=14, fontweight='bold')
 
     # Colors
     colors = {
@@ -108,13 +108,13 @@ def plotting(schedule_by_group: dict[str, dict[str, list[str]]]):
             ax.add_patch(Rectangle((0, y_day), n_cols, row_height,
                                    facecolor="#cccccc", edgecolor='black'))
             ax.text(n_cols / 2, y_day + row_height / 2, day,
-                    ha='center', va='center', fontsize=11, fontweight='bold')
+                    ha='center', va='center', fontsize=18, fontweight='bold')
 
         # Time slots
         for t_idx, hour in enumerate(time_labels):
             row = base_row - t_idx
             y = row * row_height
-            ax.text(-0.1, y + row_height / 2, hour, ha='right', va='center', fontsize=9)
+            ax.text(-0.1, y + row_height / 2, hour, ha='right', va='center', fontsize=13)
 
             # Group content
             text_map = {}
@@ -137,7 +137,7 @@ def plotting(schedule_by_group: dict[str, dict[str, list[str]]]):
                 colspan = end_col - start_col + 1 if typ == "curs" else 1
 
                 if typ == "curs":
-                    draw_cell(ax, row, start_col, colspan, row_height, text, color)
+                    draw_cell(ax, row, start_col, colspan, row_height, text, color, fontsize=16)
                 else:
                     for col in cols:
                         draw_cell(ax, row, col, 1, row_height, text, color)
@@ -155,7 +155,7 @@ def plotting(schedule_by_group: dict[str, dict[str, list[str]]]):
     plt.savefig("schedule_plot.png", dpi=240, bbox_inches="tight")
 
 
-def draw_cell(ax, row, col, colspan, row_height, text, color, edgecolor='black', textcolor='white'):
+def draw_cell(ax, row, col, colspan, row_height, text, color, edgecolor='black', textcolor='white', fontsize=11):
     y = row * row_height
     wrapped = "\n".join(textwrap.wrap(text, width=25))
     rect = Rectangle((col, y), colspan, row_height,
@@ -163,7 +163,7 @@ def draw_cell(ax, row, col, colspan, row_height, text, color, edgecolor='black',
     ax.add_patch(rect)
     if text.strip():
         ax.text(col + colspan / 2, y + row_height / 2, wrapped,
-                ha='center', va='center', fontsize=9, color=textcolor)
+                ha='center', va='center', fontsize=fontsize, color=textcolor)
 
 
 if __name__ == "__main__":
