@@ -58,7 +58,7 @@ Roadmap
 - Support multiple faculties in one run
 
 Requirements:
-matplotlib>=3.7
+- matplotlib>=3.7
 
 Citation
 If you use this project for academic purposes, please cite it as:
