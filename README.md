@@ -14,7 +14,7 @@ It uses Python to parse structured JSON inputs (students, subjects, rooms), appl
 ---
 
 ## Repository structure
-
+```
 algorithm.py # core scheduler
 entity.py # data models
 main.py # entry point
@@ -23,7 +23,7 @@ rooms.json # sample rooms
 students.json # sample groups
 subjects.json # sample sessions
 algo.txt # algorithm notes
-
+```
 
 ---
 
@@ -42,6 +42,8 @@ python main.py
 # Plot the generated timetable
 python plot_schedule.py
 ```
+Requirements:
+- matplotlib>=3.7
 
 Results
 
@@ -56,9 +58,6 @@ Roadmap
 - Add teacher availability constraints
 - Implement scoring system for timetable quality
 - Support multiple faculties in one run
-
-Requirements:
-- matplotlib>=3.7
 
 Citation
 If you use this project for academic purposes, please cite it as:
