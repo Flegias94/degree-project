@@ -64,3 +64,5 @@ Citation
 If you use this project for academic purposes, please cite it as:
 Siminiceanu Tudor, "University Timetabling Tool", GitHub repository, 2025.
 
+## License
+This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
