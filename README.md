@@ -52,10 +52,10 @@ Visualization: plot_schedule.py saves a timetable figure.
 
 Roadmap
 
-Export timetables to CSV/Excel
-Add teacher availability constraints
-Implement scoring system for timetable quality
-Support multiple faculties in one run
+- Export timetables to CSV/Excel
+- Add teacher availability constraints
+- Implement scoring system for timetable quality
+- Support multiple faculties in one run
 
 Requirements:
 matplotlib>=3.7
