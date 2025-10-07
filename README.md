@@ -8,25 +8,30 @@ End-to-end timetabling tool that reads input data from JSON (students, subjects,
 - CLI style: run the scheduler, then render a plot of the result.
 - Small, readable codebase for review.
 
+Repository structure
+
 ## Repository structure
 
 
 algorithm.py # core scheduler
-entity.py # data models / helpers
-main.py # entry point: loads data, runs scheduler
-plot_schedule.py # draws the timetable from produced data
+entity.py # data models
+main.py # entry point
+plot_schedule.py # timetable plotter
 rooms.json # sample rooms
-students.json # sample students / groups
-subjects.json # sample subjects / sessions
+students.json # sample groups
+subjects.json # sample sessions
 algo.txt # algorithm notes
 
 *(Files as seen in the repo listing.)*
-
+Quickstart (commands)
 ## Quickstart
 1) **Clone**
 ```bash
 git clone https://github.com/Flegias94/degree-project.git
 cd degree-project
+pip install -r requirements.txt  # or: pip install matplotlib
+python main.py
+python plot_schedule.py
 
 Python
 
